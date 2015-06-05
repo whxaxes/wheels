@@ -3,8 +3,8 @@ var uglify = require("gulp-uglify");
 var rename = require("gulp-rename");
 
 gulp.task('default' , function(){
-    gulp.src('./validate.js')
+    gulp.src('./eventemitter.js')
         .pipe(uglify())
-        .pipe(rename('validate.min.js'))
+        .pipe(rename('eventemitter.min.js'))
         .pipe(gulp.dest("./"));
 })
