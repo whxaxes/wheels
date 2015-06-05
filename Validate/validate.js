@@ -13,44 +13,78 @@
         return ('trim' in String.prototype) ? msg.trim() : msg.replace(/^\s+|\s+$/g, '');
     }
 
-    //简易事件绑定发射器
+    var slice = Array.prototype.slice;
+
+    //事件绑定发射器
     function EventEmitter() {
         this.eventList = {};
     }
 
     var Ep = EventEmitter.prototype;
+
     //绑定事件
-    Ep.on = function (name, func) {
-        if (!(func instanceof Function))return;
+    Ep.addListener = Ep.on = function(name, func) {
+        if (!(func instanceof Function)) return;
 
         name = name + "";
 
         this.eventList[name] = this.eventList[name] || [];
-        this.eventList[name].push(func);
+        this.eventList[name].push({
+            method: func
+        });
+
+        return true;
     };
+
+    //只执行一次的绑定
+    Ep.once = function(name, func) {
+        if (this.on(name, func)) {
+            var ev = this.eventList[name];
+            ev[ev.length - 1].once = true;
+        }
+    };
+
     //解绑事件
-    Ep.unon = function (name, func) {
-        if (!(func instanceof Function))return;
-
+    Ep.removeListener = Ep.unon = function(name, func, index) {
+        if (!(func instanceof Function)) return;
         name = name + "";
-        if (!(name in this.eventList))return;
+        var funcs;
 
-        var funcs = this.eventList[name];
+        if (!(funcs = this.eventList[name])) return;
+
         for (var i = 0; i < funcs.length; i++) {
-            if (func == funcs[i]) {
+            if (func == funcs[i].method) {
                 funcs.splice(i, 1);
                 break;
             }
         }
     };
-    //分发事件
-    Ep.emit = function (name) {
-        name = name + "";
-        if (!(name in this.eventList))return;
 
-        var funcs = this.eventList[name];
+    //删除所有lintener
+    Ep.removeAllListener = function(name){
+        if(!name){
+            this.eventList = {}
+        }else {
+            name = name + "";
+
+            if(this.eventList[name]) delete this.eventList[name]
+        }
+    }
+
+    //分发事件
+    Ep.emit = function(name) {
+        name = name + "";
+        var funcs;
+
+        if (!(funcs = this.eventList[name])) return;
+
         for (var i = 0; i < funcs.length; i++) {
-            funcs[i].apply(this, Array.prototype.slice.call(arguments, 1, arguments.length));
+            funcs[i].method.apply(this, slice.call(arguments, 1, arguments.length));
+            
+            if (funcs[i].once) {
+                funcs.splice(i , 1);
+                i--;
+            }
         }
     };
 
