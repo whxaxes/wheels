@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>document</title>
+    <style>
+        * {margin: 0;padding: 0}
+        body {overflow: hidden;}
+        form {width: 380px;margin: 20px auto;}
+        table {width: 700px}
+        table input {width: 210px;height: 30px;line-height: 25px;padding: 0 5px;border: 1px solid #666;color: #333;outline: none;}
+        .label {width: 90px;color: #333;}
+        .input {width: 240px;}
+        .tips {font-size: 13px;color: #aaa}
+        td {padding: 5px 0;}
+        p {text-align: center;}
+        p button {width: 100px;height: 40px;line-height: 40px;text-align: center;margin: 10px 4px 0 0;}
+    </style>
+</head>
+<body>
+<form action="/sub" method="get">
+    <table class="register" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+            <td class="label">*昵称:</td>
+            <td class="input"><input type="text" name="nickname" id="nickname"/></td>
+            <td class="tips">昵称为1~30个字符</td>
+        </tr>
+        <tr>
+            <td class="label">*账号:</td>
+            <td class="input"><input type="text" name="username" id="username"/></td>
+            <td class="tips">账号为6~18个字符，只允许英文、数字和下划线</td>
+        </tr>
+        <tr>
+            <td class="label">*密码:</td>
+            <td class="input"><input type="password" name="password" id="password"/></td>
+            <td class="tips">密码范围在6~16位之间</td>
+        </tr>
+        <tr>
+            <td class="label">*确认密码:</td>
+            <td class="input"><input type="password" name="password_2" id="password_2"/></td>
+            <td class="tips">两次输入密码需一致</td>
+        </tr>
+        <tr>
+            <td class="label">邮箱:</td>
+            <td class="input"><input type="text" name="email" id="email"/></td>
+            <td class="tips">您的个人邮箱</td>
+        </tr>
+        <tr>
+            <td class="label">个人网站:</td>
+            <td class="input"><input type="text" name="url" id="url"/></td>
+            <td class="tips">您的个人网站链接</td>
+        </tr>
+    </table>
+    <p><button type="submit" id="submit">注册</button></p>
+</form>
+<script src="jquery-1.11.1.min.js"></script>
+<script src="../validate.js"></script>
+<script>
+    //    实例化组件，传入相应参数
+    var validate = new Validate({
+        form: $("form")[0],
+
+        checkForm:true,   //提交时检查form表的提交参数有无发生改变
+
+        //rules和message里的key均需为input的id
+        rules: {
+            nickname: {
+                required: true,
+                maxlength: 30,
+                wait : function(done){
+                    var tips = $("#nickname").parents("tr").find(".tips")[0];
+                    if (!tips.getAttribute("data-tips")) {
+                        tips.setAttribute("data-tips", tips.innerHTML)
+                    }
+                    tips.style.color = "#71B83D";
+                    tips.innerHTML = "检查中...";
+
+                    //模拟ajax请求的延迟
+                    setTimeout(function(){
+
+                        //当执行完毕调用回调事件告诉组件已经执行完毕，传入是否成功的参数
+                        done(true);
+                    } , 3000)
+                }
+            },
+            username: {
+                type: "username",
+                required: true,
+                minlength: 6,
+                maxlength: 18
+            },
+            password: {
+                type: "password",
+                required: true,
+                minlength: 6,
+                maxlength: 16
+            },
+            password_2: {
+                type: "password",
+                required: true,
+                equal: "#password"
+            },
+            email: {
+                type: "email"
+            },
+            url: {
+                type: "url"
+            }
+        },
+
+        message: {
+            nickname: {
+                required: "昵称不能为空"
+            },
+            username: {
+                required: "账号不能为空",
+                formate: "用户名格式错误，只允许英文、数字和下划线"
+            },
+            password: {
+                required: "密码不能为空"
+            },
+            password_2: {
+                required: "请确认密码",
+                equal: "两次输入密码不相同"
+            },
+            email: {
+                formate: "邮箱格式错误"
+            },
+            url: {
+                formate: "网址格式错误"
+            }
+        }
+    });
+
+    //    当输入框focus时，将输入框状态还原
+    validate.on("focus", function (input) {
+        var tips = input.parentNode.nextSibling;
+        if (!tips.tagName) {
+            tips = tips.nextSibling;
+        }
+        if (tips.getAttribute("data-tips")) {
+            input.style.borderColor = "#666";
+            tips.style.color = "#aaa";
+            tips.innerHTML = tips.getAttribute("data-tips");
+        }
+    });
+
+    //    当输入框没有通过检查触发该事件
+    validate.on("error", function (input, message) {
+        var tips = input.parentNode.nextSibling;
+        if (!tips.tagName) {
+            tips = tips.nextSibling;
+        }
+        if (!tips.getAttribute("data-tips")) {
+            tips.setAttribute("data-tips", tips.innerHTML)
+        }
+        input.style.borderColor = "#f00";
+        tips.style.color = "#f00";
+        tips.innerHTML = message;
+    });
+
+    //    当输入框通过检查时触发该事件
+    validate.on("success", function (input) {
+        var tips = input.parentNode.nextSibling;
+        if (!tips.tagName) {
+            tips = tips.nextSibling;
+        }
+        if (!tips.getAttribute("data-tips")) {
+            tips.setAttribute("data-tips", tips.innerHTML)
+        }
+        input.style.borderColor = "#71B83D";
+        tips.style.color = "#71B83D";
+        tips.innerHTML = "填写正确";
+    });
+</script>
+</body>
+</html>
