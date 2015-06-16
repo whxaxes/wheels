@@ -1,3 +1,9 @@
+/**
+ * @description: 表单验证组件
+ * @author wanghx
+ * @dependencies
+ */
+
 (function (func) {
     if ("define" in window) {
         define(function (require, exports, module) {
@@ -80,7 +86,7 @@
 
         for (var i = 0; i < funcs.length; i++) {
             funcs[i].method.apply(this, slice.call(arguments, 1, arguments.length));
-            
+
             if (funcs[i].once) {
                 funcs.splice(i , 1);
                 i--;
@@ -107,7 +113,7 @@
         }
 
         for (var k in o) {
-            if (typeof o[k] !== "object" || o[k].nodeType) {
+            if ((o[k] instanceof RegExp) || typeof o[k] !== "object" || o[k].nodeType) {
                 t[k] = o[k];
                 continue;
             }
@@ -261,7 +267,7 @@
                     reg = /^[\da-zA-Z_.\-]+@[\da-zA-Z]+\.[a-zA-Z]{2,4}$/g;
                     break;
                 case "url":
-                    reg = /^https?\:\/\/[\da-zA-Z.:]+(\/[\da-zA-Z_.-]+)+\/?$/g;
+                    reg = /^https?\:\/\/[\da-zA-Z.]+(?:\:\d+)?(?:\/[\da-zA-Z_.-]+)+\/?$/g;
                     break;
                 default :
                     break;
