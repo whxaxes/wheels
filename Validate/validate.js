@@ -255,7 +255,7 @@
         //检查input的格式
         if (rule.type || rule.reg) {
             var reg;
-            //根据type提供四种种正则，匹配用户名、密码、邮箱和url
+            //根据type提供五种正则，匹配用户名、密码、邮箱和url，电话(匹配11位手机，和区号-固定电话格式)
             switch (rule.type) {
                 case "username":
                     reg = /^[\da-zA-Z_]+$/g;
@@ -268,6 +268,9 @@
                     break;
                 case "url":
                     reg = /^https?\:\/\/[\da-zA-Z.]+(?:\:\d+)?(?:\/[\da-zA-Z_.-]+)+\/?$/g;
+                    break;
+                case "phone":
+                    reg = /^\d{11}|\d{3,4}-\d{7,8}$/g;
                     break;
                 default :
                     break;
