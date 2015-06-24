@@ -1,3 +1,5 @@
 # EventEmitter
 
-用法请见demo代码
+事件发射器<br>
+
+用法请见`demo`代码
