@@ -1,15 +1,35 @@
-!function(fn){
-	if('define' in window){
-		define(function(require, exports, module){
-			module.exports = fn;
-		})
-	}else {
-		window.freestring = fn;
-	}
-}(function(fn){
-	if(typeof fn !== "function") return "";
+!function (fn) {
+    if ('define' in window) {
+        define(function (require, exports, module) {
+            module.exports = fn();
+        })
+    } else {
+        window.freestring = fn();
+    }
+}(function () {
+    var RE = /\/\*(?:\r\n|\n)?([\s\S]*?)(?:\r\n|\n)?\*\//g;
+    var ARG_RE = /\$\{[a-zA-Z0-9_]*(?:\.[a-zA-Z0-9_]+|\[\d+\])*\}/g;
 
-	var re = /\/\*(?:\r\n|\n)?([\s\S]*?)(?:\r\n|\n)?\*\//g;
+    return function (fn, json) {
+        if (typeof fn !== "function") return "";
 
-	return re.test(fn.toString()) ? RegExp.$1 : "";
+        var result = RE.test(fn.toString()) ? RegExp.$1 : "";
+        RE.lastIndex = 0;
+
+        if (typeof json !== "object") return result;
+
+        return result.replace(ARG_RE, function (m) {
+            var args = m.replace(/^\$\{|\}$/g,'').replace(/\[(\d+)\]/g , '.$1'),
+                obj = json,
+                a;
+
+            args = args.split(".");
+
+            while(a = args.shift()){
+                obj = obj[a];
+            }
+
+            return obj + "";
+        })
+    }
 });
