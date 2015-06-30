@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<body>
+<div id="save"></div>
+<script src="../freestring.js"></script>
+<script>
+	var str = freestring(function(){
+		/*@preserve
+            <ul class="name">
+                <li class="id1">${data}</li>
+                <li class="id2">${data2.0}</li>
+                <li class="id3">${data2[1]}</li>
+            </ul>
+		*/
+	} , {data:"ss" , data2:[0 , 2 , 3]});
+
+    var str2 = freestring(function(){
+        /*
+             <ul class="name">
+                 <li class="id1">${0}</li>
+                 <li class="id2">${1}</li>
+                 <li class="id3">${2}</li>
+             </ul>
+         */
+    } , ['asd' , '123' , 12344]);
+
+    var save = document.getElementById("save");
+    save.innerHTML = str + str2;
+
+	console.log(str);
+    console.log(str2);
+</script>
+</body>
+</html>

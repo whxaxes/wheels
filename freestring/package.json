@@ -1,0 +1,22 @@
+{
+  "name": "freestring",
+  "version": "1.0.1",
+  "description": "template string",
+  "main": "freestring.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "null"
+  },
+  "author": "wanghx",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/whxaxes/freestring.git"
+  },
+  "bugs": {
+    "url": "https://github.com/whxaxes/freestring/issues"
+  },
+  "homepage": "https://github.com/whxaxes/freestring"
+}
