@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>document</title>
+</head>
+<body>
+
+<script src="jquery-1.11.1.min.js"></script>
+<script src="../eventemitter.js"></script>
+<script>
+    var eventemitter = new EventEmitter();
+
+    eventemitter.addListener('eve' , function(){
+        console.log("method-1")
+    })
+
+    eventemitter.once('eve' , function(){
+        console.log("method-2")
+    })
+
+    eventemitter.on('eve' , s3);
+
+    function s3(){
+        console.log("method-3")
+    }
+
+    eventemitter.once('eve' , function(){
+        console.log("method-4")
+    })
+
+    console.log("=========")
+    eventemitter.emit("eve");
+
+    console.log("=========")
+    eventemitter.emit("eve");
+
+    eventemitter.removeListener("eve" , s3);
+
+    console.log("=========")
+    eventemitter.emit("eve");
+
+    eventemitter.removeAllListener("eve");
+
+    console.log("=========")
+    eventemitter.emit("eve");
+</script>
+</body>
+</html>
