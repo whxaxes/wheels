@@ -29,29 +29,15 @@
     var Ep = EventEmitter.prototype;
 
     //绑定事件
-    Ep.addListener = Ep.on = function(name, func) {
+    Ep.on = function(name, func) {
         if (!(func instanceof Function)) return;
-
-        name = name + "";
-
         this.eventList[name] = this.eventList[name] || [];
-        this.eventList[name].push({
-            method: func
-        });
-
+        this.eventList[name].push(func);
         return true;
     };
 
-    //只执行一次的绑定
-    Ep.once = function(name, func) {
-        if (this.on(name, func)) {
-            var ev = this.eventList[name];
-            ev[ev.length - 1].once = true;
-        }
-    };
-
     //解绑事件
-    Ep.removeListener = Ep.unon = function(name, func, index) {
+    Ep.off = function(name, func, index) {
         if (!(func instanceof Function)) return;
         name = name + "";
         var funcs;
@@ -59,23 +45,12 @@
         if (!(funcs = this.eventList[name])) return;
 
         for (var i = 0; i < funcs.length; i++) {
-            if (func == funcs[i].method) {
+            if (func == funcs[i]) {
                 funcs.splice(i, 1);
                 break;
             }
         }
     };
-
-    //删除所有lintener
-    Ep.removeAllListener = function(name){
-        if(!name){
-            this.eventList = {}
-        }else {
-            name = name + "";
-
-            if(this.eventList[name]) delete this.eventList[name]
-        }
-    }
 
     //分发事件
     Ep.emit = function(name) {
@@ -85,12 +60,7 @@
         if (!(funcs = this.eventList[name])) return;
 
         for (var i = 0; i < funcs.length; i++) {
-            funcs[i].method.apply(this, slice.call(arguments, 1, arguments.length));
-
-            if (funcs[i].once) {
-                funcs.splice(i , 1);
-                i--;
-            }
+            funcs[i].apply(this, slice.call(arguments, 1, arguments.length));
         }
     };
 
@@ -185,12 +155,16 @@
                 //当输入框内容改变时pass为false
                 that.addEvent(ele, 'change', function () {
                     rule.pass = false;
+                    that.emit('change', this);
                 });
             }(k);
         }
     };
 
-    //检查所有输入框
+    /**
+     * 检查所有输入框
+     * @returns {boolean}
+     */
     Vp.checkAll = function () {
         for (var k in this.rules) {
             if (!this.check(k)) return false;
@@ -198,7 +172,8 @@
         return true;
     };
 
-    /**检查单个输入框
+    /**
+     * 检查单个输入框
      * @param id   可以为dom对象也可以为dom的id
      * @returns {boolean}   如果为true则通过检查，否则为没有通过
      */
@@ -210,7 +185,10 @@
         var rule = this.rules[id];
         var mess = this.message[id];
         var value = trim(ele.value);
+        var valueIsChange = rule.recordValue !== value;    //当前内容是否有更改
         var msg;
+
+        rule.recordValue = value;
 
         if (!rule) return true;
 
@@ -288,19 +266,28 @@
 
         //wait用于需要跟后台交互检查的input
         if (rule.wait && (typeof rule.wait === "function")) {
-            rule.wait.call(this, function (result, msg) {
+
+            //如果输入框内容未发生更改，并且当前未通过则不执行wait方法
+            if(!valueIsChange && !rule.pass){
+                that.emit("error", ele, mess.wait);
+                return false;
+            }
+
+            //如果输入框内容由改变，则执行异步
+            rule.wait.call(this, ele, function (result, msg) {
                 if(value !== ele.value) return;
 
                 if(rule.pass) return;
 
                 rule.pass = !!result;
 
-                if(rule.focuing)return;
+                if(rule.focuing) return;
 
                 if (result) {
                     that.emit("success", ele);
                 } else {
-                    that.emit("error", ele, msg || "检查失败");
+                    mess.wait = msg || mess.wait || "检查失败";
+                    that.emit("error", ele, mess.wait);
                 }
             });
 
@@ -314,7 +301,8 @@
         return true;
     };
 
-    /**简易选择器
+    /**
+     * 简易选择器
      * @param selector  只能为单个id或class或类名
      * @returns {*}
      */
