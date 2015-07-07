@@ -67,8 +67,8 @@
             nickname: {
                 required: true,
                 maxlength: 30,
-                wait : function(done){
-                    var tips = $("#nickname").parents("tr").find(".tips")[0];
+                wait : function(input , done){
+                    var tips = $(input).parents("tr").find(".tips")[0];
                     if (!tips.getAttribute("data-tips")) {
                         tips.setAttribute("data-tips", tips.innerHTML)
                     }
@@ -77,9 +77,8 @@
 
                     //模拟ajax请求的延迟
                     setTimeout(function(){
-
                         //当执行完毕调用回调事件告诉组件已经执行完毕，传入是否成功的参数
-                        done(true);
+                        done(true , "异步执行完毕");
                     } , 3000)
                 }
             },
