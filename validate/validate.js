@@ -5,7 +5,7 @@
  */
 
 (function (func) {
-    if ("define" in window) {
+    if ("define" in window && define.cmd) {
         define(function (require, exports, module) {
             module.exports = func();
         })
@@ -15,20 +15,34 @@
 }(function () {
     "use strict";
 
+    //各种type对应的正则
+    var typeReDict = {
+        'username' : /^[\da-zA-Z_]+$/g,
+        'password' : /^[\da-zA-Z_.~@!$^#%*&+-]+$/g,
+        'email'    : /^[\da-zA-Z_.\-]+@[\da-zA-Z]+\.[a-zA-Z]{2,4}$/g,
+        'url'      : /^https?\:\/\/[\da-zA-Z.]+(?:\:\d+)?(?:\/[\da-zA-Z_.-]+)+\/?$/g,
+        'phone'    : /^\d{11}|\d{3,4}-\d{7,8}$/g
+    };
     function trim(msg) {
         return ('trim' in String.prototype) ? msg.trim() : msg.replace(/^\s+|\s+$/g, '');
     }
-
     var slice = Array.prototype.slice;
 
-    //事件绑定发射器
+    /**
+     * 事件绑定发射器
+     * @constructor
+     */
     function EventEmitter() {
         this.eventList = {};
     }
-
     var Ep = EventEmitter.prototype;
 
-    //绑定事件
+    /**
+     * 绑定事件
+     * @param name
+     * @param func
+     * @returns {boolean}
+     */
     Ep.on = function(name, func) {
         if (!(func instanceof Function)) return;
         this.eventList[name] = this.eventList[name] || [];
@@ -36,8 +50,12 @@
         return true;
     };
 
-    //解绑事件
-    Ep.off = function(name, func, index) {
+    /**
+     * 解绑事件
+     * @param name
+     * @param func
+     */
+    Ep.off = function(name, func) {
         if (!(func instanceof Function)) return;
         name = name + "";
         var funcs;
@@ -52,7 +70,10 @@
         }
     };
 
-    //分发事件
+    /**
+     * 分发事件
+     * @param name  事件名
+     */
     Ep.emit = function(name) {
         name = name + "";
         var funcs;
@@ -64,7 +85,11 @@
         }
     };
 
-    //表单验证组件类
+    /**
+     * 表单验证组件类
+     * @param options
+     * @constructor
+     */
     function Validate(options) {
         this.extend(options);
         this.init();
@@ -75,7 +100,11 @@
 
     var Vp = Validate.prototype;
 
-    //将传入的参数转为对象属性
+    /**
+     * 将传入的参数转为对象属性
+     * @param t
+     * @param o
+     */
     Vp.extend = function (t, o) {
         if (arguments.length == 1) {
             o = t;
@@ -97,7 +126,12 @@
         }
     };
 
-    //兼容IE的事件绑定
+    /**
+     * 兼容IE的事件绑定
+     * @param ele
+     * @param ev
+     * @param func
+     */
     Vp.addEvent = function (ele, ev, func) {
         if (!ele.nodeType || typeof ev !== "string" || !(func instanceof Function))return;
 
@@ -112,7 +146,9 @@
         }
     };
 
-    //组件初始化，添加事件绑定
+    /**
+     * 组件初始化，添加事件绑定
+     */
     Vp.init = function () {
         var that = this;
         //如果存在form，则对form的submit方法进行绑定
@@ -192,13 +228,8 @@
         //每次检查都记录输入框的输入内容
         rule.recordValue = value;
 
+        //如果不存在相应的数据，直接返回true
         if (!rule) return true;
-
-        //如果input已经通过检测，同时内容尚未发生改变，则直接分发检测成功事件
-        if(!valueIsChange && rule.pass){
-            this.emit("success", ele);
-            return true;
-        }
 
         //检查input是否必须
         if (rule.required && value.length === 0) {
@@ -223,7 +254,7 @@
 
         //判断input是否跟需要相等的值相等
         if (rule.equal) {
-            var eqdom = dom(rule.equal);
+            var eqdom = (typeof rule.equal === "string") ? dom(rule.equal) : rule.equal;
 
             if (!eqdom.nodeType || value !== eqdom.value) {
                 msg = mess ? (mess.equal || "") : "";
@@ -232,47 +263,45 @@
             }
         }
 
+        //判断input是否跟目标输入框的值不相等
+        if (rule.notequal) {
+            var neqdom = (typeof rule.notequal === "string") ? dom(rule.notequal) : rule.notequal;
+
+            if (!neqdom.nodeType || value === neqdom.value) {
+                msg = mess ? (mess.notequal || "") : "";
+                this.emit("error", ele, msg || "两次输入结果不能相同");
+                return false;
+            }
+        }
+
         //检查input的格式
         if (rule.type || rule.reg) {
-            var reg;
-            //根据type提供五种正则，匹配用户名、密码、邮箱和url，电话(匹配11位手机，和区号-固定电话格式)
-            switch (rule.type) {
-                case "username":
-                    reg = /^[\da-zA-Z_]+$/g;
-                    break;
-                case "password":
-                    reg = /^[\da-zA-Z_.~@!$^#%*&+-]+$/g;
-                    break;
-                case "email":
-                    reg = /^[\da-zA-Z_.\-]+@[\da-zA-Z]+\.[a-zA-Z]{2,4}$/g;
-                    break;
-                case "url":
-                    reg = /^https?\:\/\/[\da-zA-Z.]+(?:\:\d+)?(?:\/[\da-zA-Z_.-]+)+\/?$/g;
-                    break;
-                case "phone":
-                    reg = /^\d{11}|\d{3,4}-\d{7,8}$/g;
-                    break;
-                default :
-                    break;
-            }
-
             //如果用户设置了正则，则使用用户设置的正则
-            reg = rule.reg ? rule.reg : reg;
+            var reg = rule.reg || typeReDict[rule.type];
 
-            if (value.length > 0 && (!reg || !(reg instanceof RegExp) || !reg.test(value))) {
-                msg = mess ? (mess.formate || "") : "";
-                this.emit("error", ele, msg || "格式错误");
-                return false;
+            if(value.length && reg instanceof RegExp){
+                if(!reg.test(value)){
+                    msg = mess ? (mess.formate || "") : "";
+                    this.emit("error", ele, msg || "格式错误");
+                    return false;
+                }
+
+                reg.lastIndex = 0;
             }
         }
 
         //wait用于需要跟后台交互检查的input
         if (rule.wait && (typeof rule.wait === "function")) {
 
-            //如果输入框内容未发生更改，并且当前未通过则不执行wait方法
-            if(!valueIsChange && !rule.pass){
-                that.emit("error", ele, mess.wait);
-                return false;
+            //如果input内容尚未发生改变，则不进行ajax请求，如果上一次请求中成功，则直接分发检测成功事件，否则分发检测失败事件
+            if(!valueIsChange){
+                if(rule.pass){
+                    this.emit("success", ele);
+                }else {
+                    this.emit("error", ele, mess.wait);
+                }
+
+                return rule.pass;
             }
 
             //如果输入框内容由改变，则执行异步
