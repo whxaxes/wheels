@@ -141,13 +141,11 @@
                 var rule = that.rules[k] || {};
                 //当输入框被focus时分发focus事件
                 that.addEvent(ele, 'focus', function () {
-                    rule.focuing = true;
                     that.emit('focus', this);
                 });
 
                 //当输入失去焦点，分发blur，并且传入有无经常格式检查
                 that.addEvent(ele, 'blur', function () {
-                    rule.focuing = false;
                     var result = that.check(this);
                     that.emit('blur', this, result);
                 });
@@ -166,10 +164,13 @@
      * @returns {boolean}
      */
     Vp.checkAll = function () {
+        var isPass = true;
         for (var k in this.rules) {
-            if (!this.check(k)) return false;
+            if (!this.check(k)){
+                isPass = false;
+            }
         }
-        return true;
+        return isPass;
     };
 
     /**
@@ -188,12 +189,13 @@
         var valueIsChange = rule.recordValue !== value;    //当前内容是否有更改
         var msg;
 
+        //每次检查都记录输入框的输入内容
         rule.recordValue = value;
 
         if (!rule) return true;
 
-        //如果input已经通过检测，则直接分发检测成功事件
-        if(rule.pass){
+        //如果input已经通过检测，同时内容尚未发生改变，则直接分发检测成功事件
+        if(!valueIsChange && rule.pass){
             this.emit("success", ele);
             return true;
         }
@@ -277,11 +279,7 @@
             rule.wait.call(this, ele, function (result, msg) {
                 if(value !== ele.value) return;
 
-                if(rule.pass) return;
-
                 rule.pass = !!result;
-
-                if(rule.focuing) return;
 
                 if (result) {
                     that.emit("success", ele);
