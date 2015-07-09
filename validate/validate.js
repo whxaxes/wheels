@@ -23,9 +23,7 @@
         'url'      : /^https?\:\/\/[\da-zA-Z.]+(?:\:\d+)?(?:\/[\da-zA-Z_.-]+)+\/?$/g,
         'phone'    : /^\d{11}|\d{3,4}-\d{7,8}$/g
     };
-    function trim(msg) {
-        return ('trim' in String.prototype) ? msg.trim() : msg.replace(/^\s+|\s+$/g, '');
-    }
+
     var slice = Array.prototype.slice;
 
     /**
@@ -221,7 +219,7 @@
 
         var rule = this.rules[id];
         var mess = this.message[id];
-        var value = trim(ele.value);
+        var value = ele.value;
         var valueIsChange = rule.recordValue !== value;    //当前内容是否有更改
         var msg;
 
