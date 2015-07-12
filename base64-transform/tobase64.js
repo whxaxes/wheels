@@ -97,4 +97,4 @@
         root.tobase64 = tobase64;
         root.frombase64 = frombase64;
     }
-}(this)
+}(this);
