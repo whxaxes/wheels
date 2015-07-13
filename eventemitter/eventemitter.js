@@ -16,11 +16,11 @@
     var slice = Array.prototype.slice;
 
     //事件绑定发射器
-    function EventEmitter() {}
+    function EventEmitter() {
+        this.eventList = {}
+    }
 
     var Ep = EventEmitter.prototype;
-
-    Ep.eventList = {};
 
     //绑定事件
     Ep.addListener = Ep.on = function(name, func) {
