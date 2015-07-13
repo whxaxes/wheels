@@ -30,10 +30,11 @@
      * 事件绑定发射器
      * @constructor
      */
-    function EventEmitter() {
-        this.eventList = {};
-    }
+    function EventEmitter() {}
+
     var Ep = EventEmitter.prototype;
+
+    Ep.eventList = {};
 
     /**
      * 绑定事件

@@ -1,3 +1,7 @@
+/**
+ * 事件发射器组件
+ */
+
 (function(func) {
     if ("define" in window) {
         define(function(require, exports, module) {
@@ -12,11 +16,11 @@
     var slice = Array.prototype.slice;
 
     //事件绑定发射器
-    function EventEmitter() {
-        this.eventList = {};
-    }
+    function EventEmitter() {}
 
     var Ep = EventEmitter.prototype;
+
+    Ep.eventList = {};
 
     //绑定事件
     Ep.addListener = Ep.on = function(name, func) {
@@ -41,7 +45,7 @@
     };
 
     //解绑事件
-    Ep.removeListener = Ep.unon = function(name, func, index) {
+    Ep.removeListener = Ep.off = function(name, func, index) {
         if (!(func instanceof Function)) return;
         name = name + "";
         var funcs;
@@ -76,7 +80,7 @@
 
         for (var i = 0; i < funcs.length; i++) {
             funcs[i].method.apply(this, slice.call(arguments, 1, arguments.length));
-            
+
             if (funcs[i].once) {
                 funcs.splice(i , 1);
                 i--;
