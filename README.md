@@ -2,7 +2,7 @@
 
 ## 平时造的轮子
 
-* [node-run](https://github.com/whxaxes/wheels/tree/master/node-run): 类似于supervisor的功能，supervisor监听整个文件夹，node-run只监听执行文件及其引用
+* [node-run](https://github.com/whxaxes/wheels/tree/master/node-run): 类似于supervisor的功能，但node-run只监听执行文件及其引用的js文件（不包括node_module里的文件）
 
 * [matrix](https://github.com/whxaxes/wheels/tree/master/matrix): 用于计算transform变换矩阵的组件
 
