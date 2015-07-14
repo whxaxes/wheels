@@ -14,3 +14,5 @@ npm install node-run -g
 cd project
 run app.js
 ```
+
+![image](http://whxaxes.github.io/easy-router/images/test3.jpg "test")
