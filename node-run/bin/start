@@ -1,0 +1,10 @@
+#! /usr/bin/env node
+
+var runner = require("../");
+var args = process.argv;
+
+if(!args[2]){
+    throw new Error("filename is required!");
+}
+
+runner(args[2] , args[3]==="debug");

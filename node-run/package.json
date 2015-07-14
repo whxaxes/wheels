@@ -1,0 +1,14 @@
+{
+  "name": "node-run",
+  "version": "1.0.0",
+  "description": "be used to run nodejs",
+  "bin": {
+    "run": "bin/start"
+  },
+  "main": "index.js",
+  "scripts": {
+    "test": "run app.js"
+  },
+  "author": "wanghx",
+  "license": "MIT"
+}
