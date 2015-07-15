@@ -118,20 +118,20 @@ function spawn(nodePath){
     console.log("Server is running");
 
     child.on("exit" , function (code, sign) {
-        if(code !== 0){
+        if(sign === "SIGTERM"){
             console.log("Restart the server...\r\n");
             spawn(nodePath);
         }
-    }).on('error' , function(err){
+    });
+
+    child.on('error' , function(err){
         console.log(err);
 
-        if(code !== 0){
-            waiting = true;
-            setTimeout(function(){
-                console.log("Restart the server...\r\n");
-                spawn(nodePath);
-            },2000)
-        }
+        waiting = true;
+        setTimeout(function(){
+            console.log("Restart the server...\r\n");
+            spawn(nodePath);
+        },3000)
     });
 
     child.stdout.setEncoding("utf8");
