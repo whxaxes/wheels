@@ -9,6 +9,7 @@ var node_path_re = /require\((?:'|")[^()"']+(?:'|")\)/g;
 var watcherList = {};
 var waiting = false;
 var isDebug = false;
+var delay = 2000;
 
 /**
  * @param baseFile  nodejs文件路径
@@ -111,27 +112,20 @@ function checkAndAdd(filePath){
  * @returns {*}
  */
 function spawn(nodePath){
-    waiting = false;
-
     child = child_process.spawn("node" , [nodePath]);
 
     console.log("Server is running");
 
     child.on("exit" , function (code, sign) {
-        if(sign === "SIGTERM"){
-            console.log("Restart the server...\r\n");
-            spawn(nodePath);
+        if(code !== 0){
+            respawn(nodePath);
         }
     });
 
     child.on('error' , function(err){
         console.log(err);
 
-        waiting = true;
-        setTimeout(function(){
-            console.log("Restart the server...\r\n");
-            spawn(nodePath);
-        },3000)
+        respawn(nodePath);
     });
 
     child.stdout.setEncoding("utf8");
@@ -145,4 +139,21 @@ function spawn(nodePath){
     });
 
     return child;
+}
+
+/**
+ * 重启子进程
+ * @param nodePath
+ */
+function respawn(nodePath){
+    if (waiting) return;
+
+    waiting = true;
+
+    console.log("Restart the server after " + delay + "ms ...\r\n");
+
+    setTimeout(function () {
+        waiting = false;
+        spawn(nodePath);
+    }, delay)
 }
