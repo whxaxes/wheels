@@ -11,7 +11,6 @@ var watcherList = {};
 var waiting = false;
 var isDebug = false;
 var delay = 2000;
-var ostype = os.type();
 
 /**
  * @param baseFile  nodejs文件路径
@@ -56,22 +55,17 @@ function watchFile(filePath) {
 
     watcherList[filePath] = watcher;
 
-    watcher.on('change', function(){
+    watcher.on('change', function(e){
+        if (waiting) return;
+
         console.log('\x1b[32m> "' + filePath + '" changed\x1b[0m');
 
         //如果文件发生改动，则再次检查文件有无添加新的引用
         checkAndAdd(filePath);
 
-        if (waiting) return;
+        waiting = true;
 
         child.kill('SIGTERM'); 
-
-        // 在os x上change事件只会触发一次，因此在此重新调用一次start方法重新监听
-        if(ostype === "Darwin"){
-            setTimeout(function(){
-                watcher.start(filePath);
-            },1000);
-        }
     });
 
     watcher.on('error', function(e) {
@@ -143,6 +137,8 @@ function spawn(nodePath) {
         process.stdout.write(data);
     });
 
+    waiting = false;
+
     return child;
 }
 
@@ -151,14 +147,9 @@ function spawn(nodePath) {
  * @param nodePath
  */
 function respawn(nodePath) {
-    if (waiting) return;
-
-    waiting = true;
-
     console.log("Restart the server after " + delay + "ms ...\r\n");
 
     setTimeout(function() {
-        waiting = false;
         spawn(nodePath);
     }, delay)
 }
